@@ -18,6 +18,7 @@ _Created: October 2025_
     - [Run automated function and execute AADInternals](#run-automated-function-and-execute-aadinternals)
   - [Adding new credentials via existing Entra Connect certificate](#adding-new-credentials-via-existing-entra-connect-certificate)
 - [Hunting and Detection Capabilities](#hunting-and-detection-capabilities)
+  - [Threat Detection in Microsoft Defender for Identity alerts](#threat-detection-in-microsoft-defender-for-identity-alerts)
   - [Custom Detection and Hunting Queries](#custom-detection-and-hunting-queries)
     - [Identify servers with installed Entra Connect components](#identify-servers-with-installed-entra-connect-components)
     - [List Entra Connect related Application Identities (including NodeIds from XSPM)](#list-entra-connect-related-application-identities-including-nodeids-from-xspm)
@@ -256,9 +257,9 @@ Once the new key is added, the certificate can be exported and used by the attac
 
 # Hunting and Detection Capabilities
 
-The attack scenarios scoped in this paper are sophisticated and assume that the attacker is already inside the organization. That being said, the detection capabilities rely on custom detections and threat hunting more than native detection capabilities from Microsoft's security stack. 
+The attack scenarios scoped in this paper are sophisticated and assume that the attacker is already inside the organization. That being said, the detection capabilities combine both out-of-box native detections from Microsoft's security stack and custom detections and threat hunting queries.
 
-Native Microsoft detections exist, but there are only a few of them available out of the box. The following figure is an excellent visualization of the different areas where focus needs to be in different scenarios. The attack scenarios in this paper are divided into two different areas:
+Microsoft Defender for Identity introduced purpose-built, out-of-box security alerts specifically targeting ABA identities (Sync application) in early 2026, covering suspicious sign-in behavior and anomalous Graph API activity. These complement the custom hunting queries described later in this section, which address detection gaps not yet covered by built-in alerts. The following figure is an excellent visualization of the different areas where focus needs to be in different scenarios. The attack scenarios in this paper are divided into two different areas:
 
 - Targeting the Entra Connect server in an on-premises environment.
 - Targeting application instances in a cloud environment.
@@ -268,6 +269,64 @@ The Microsoft Entra ID application consent framework is complex, encompassing mu
 ![image.png](./media/entra-connect-aba/aba6.png)
 
 Source: Visualization of [Detect & defend vs Entra ID persistence](https://www.linkedin.com/posts/kaknowles_detect-defend-vs-entra-id-persistence-activity-7336465313120645121-v4tW?utm_source=share&utm_medium=member_ios&rcm=ACoAABKGip8B7Y1QEXnmwIBCsbE0dZRS86knh8M) by Katie Knowles
+
+## Threat Detection in Microsoft Defender for Identity alerts
+In [January](https://learn.microsoft.com/en-us/defender-for-identity/whats-new#new-defender-for-identity-security-alerts-2) and [February](https://learn.microsoft.com/en-us/defender-for-identity/whats-new#new-defender-for-identity-security-alerts-1) 2026, Microsoft released threat detections for ABA identities (also referred to as "Sync application"), which are [documented on Microsoft Learn](https://learn.microsoft.com/en-us/defender-for-identity/alerts-xdr).
+
+<details>
+<summary><a name="suspicious-graph-api-request-made-from-entra-id-sync-application"></a><strong>Suspicious Graph API request made from Entra ID sync application</strong></summary>
+
+**Severity:** Medium
+**MITRE Technique:** [T1087](https://attack.mitre.org/techniques/T1087), [T1069](https://attack.mitre.org/techniques/T1069)
+**Detector ID:** xdr_SuspiciousConnectSyncProvisioningGraphAPIActivity
+
+**Description:** An unexpected Graph API request made by the Entra ID synchronization service application was detected. This behavior might indicate that the application was compromised and is being used for malicious activities.
+
+</details>
+
+<details>
+<summary><a name="suspicious-sign-in-observed-from-entra-id-sync-application"></a><strong>Suspicious sign-in observed from Entra ID sync application</strong></summary>
+
+**Severity:** Medium
+**MITRE Technique:** [T1078.001](https://attack.mitre.org/techniques/T1078/001)
+**Detector ID:** xdr_SuspiciousConnectSyncProvisioningSignIn
+
+**Description:** A suspicious sign-in from the Entra ID synchronization service application has been detected. This behavior might indicate that the application was compromised and is being used for malicious activities.
+
+</details>
+
+<details>
+<summary><a name="suspicious-sign-in-observed-from-entra-id-sync-application-to-an-uncommon-resource-app"></a><strong>Suspicious sign-in observed from Entra ID sync application to an uncommon resource app</strong></summary>
+
+**Severity:** Medium
+**MITRE Technique:** [T1078.001](https://attack.mitre.org/techniques/T1078/001)
+**Detector ID:** xdr_SuspiciousConnectSyncProvisioningSignIn
+
+**Description:** A suspicious sign-in from the Entra ID synchronization service application to an uncommon resource application has been detected. This behavior might indicate that the application was compromised and is being used for malicious activities.
+
+</details>
+
+<details>
+<summary><a name="suspicious-sign-in-observed-to-entra-id-sync-application-using-an-uncommon-user-agent"></a><strong>Suspicious sign-in observed to Entra ID sync application using an uncommon user agent</strong></summary>
+
+**Severity:** Medium
+**MITRE Technique:** [T1078.001](https://attack.mitre.org/techniques/T1078/001)
+**Detector ID:** xdr_SuspiciousConnectSyncProvisioningSignIn
+
+**Description:** A suspicious sign-in from the Entra ID synchronization service application using an uncommon user agent has been detected. This behavior might indicate that the application was compromised and is being used for malicious activities.
+
+</details>
+
+<details>
+<summary><a name="suspicious-user-configuration-change-activity-from-entra-id-sync-application"></a><strong>Suspicious user configuration change activity from Entra ID sync application</strong></summary>
+
+**Severity:** Medium
+**MITRE Technique:** [T1078.001](https://attack.mitre.org/techniques/T1078/001)
+**Detector ID:** xdr_ConnectSyncProvisioningNonSyncActivity
+
+**Description:** A suspicious user configuration change from the Entra ID synchronization service application has been observed. This behavior might indicate that the application was compromised and is being used for malicious activities. Go through the recommended actions to investigate and mitigate associated risks immediately.
+
+</details>
 
 ## Custom Detection and Hunting Queries
 
